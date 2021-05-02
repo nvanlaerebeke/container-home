@@ -40,7 +40,7 @@ spec:
   }
   stages {
     stage('build') {
-      when { branch: "master" }
+      when { anyOf { branch "master" } }
       steps {
         container(name: 'kaniko', shell: '/busybox/sh') {
           sh '''#!/busybox/sh 
