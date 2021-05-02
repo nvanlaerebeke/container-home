@@ -40,8 +40,8 @@ spec:
   }
   stages {
     stage('build') {
+      when { branch: "master" }
       steps {
-        when { branch: "master" }
         container(name: 'kaniko', shell: '/busybox/sh') {
           sh '''#!/busybox/sh 
 if [[ $GIT_LOCAL_BRANCH == "main" || $GIT_LOCAL_BRANCH == "master" ]];
