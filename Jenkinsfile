@@ -18,12 +18,6 @@ spec:
         server: nas.crazyzone.be 
         path: /volume1/docker-storage/kaniko/cache
   containers:
-  - name: docs-builder
-    image: registry.crazyzone.be/daux.io:latest
-    imagePullPolicy: Always
-    tty: true
-    command:
-    - cat
   - name: kaniko
     image: registry.crazyzone.be/kaniko:20210317
     imagePullPolicy: Always
@@ -39,6 +33,22 @@ spec:
 
   }
   stages {
+    stage('version') {
+      when { anyOf { branch "master" } }
+      steps {
+        checkout \
+              scm: [ $class: 'GitSCM', \
+              branches: [[name: '*/' + env.BRANCH_NAME]],  \
+              extensions: [[  $class: 'RelativeTargetDirectory', relativeTargetDir: "repository/" ], [$class: 'CleanCheckout']],
+              userRemoteConfigs: [[ credentialsId: '1743f099-9f0f-43e0-9aa2-4ffc9e9cd066', url: "https://github.com/nvanlaerebeke/container-home.git" ]]
+            ]
+          sh '''
+            VERSION=`cat ./repository/VERSION`
+            echo $VERSION | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' > ./repository/VERSION
+            git commit -am 'Upped version'
+'''
+      }
+    }
     stage('build') {
       when { anyOf { branch "master" } }
       steps {
